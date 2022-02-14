@@ -3,6 +3,7 @@ const User = require('../models/User.model');
 const router = express.Router();
 const saltRounds = 5;
 const bcrypt = require('bcrypt');
+const req = require('express/lib/request');
 
 router.route('/signup')
 	.get((req, res)=>{
@@ -41,7 +42,7 @@ router.route("/login")
 	  const password = req.body.password;
 
 	  if (!username || !password) {
-      res.render("signup", { errorMessage: "All filds are required" });
+      res.render("login", { errorMessage: "All fields are required" });
 	  throw new Error("Validation error!");
     }
 
@@ -54,18 +55,29 @@ router.route("/login")
 
 			const isPwdCorrect = bcrypt.compareSync(password, user.password)
 			if(isPwdCorrect){
-				res.redirect('/')
-			}else{
-				res.render('login', {errorMessage: "Incorrect credentials!"})
+				req.session.currentUserId = user._id
+				res.redirect('profile')
+			} else {
+				res.render('login', {errorMessage: "Incorrect credentials!"});
 			}
 		})
-		.catch((err)=>{
-			console.log(err)
-		})	
+		.catch((err)=>{console.log(err)});
   });
 
 router.get('/profile', (req, res) => {
-	res.render('profile');
+	const id = req.session.currentUserId;
+
+	User.findById(id)
+		.then((user)=>{
+			res.render("profile", user)
+		})
+		.catch(err=>console.log(err))
+})
+
+router.get("/logout", (req, res)=>{
+	req.session.destroy(()=>{
+		res.redirect("/")
+	})
 })
 
 module.exports = router;
