@@ -4,11 +4,13 @@ const router = express.Router();
 const saltRound = 10;
 const bcrypt = require('bcrypt');
 
-router.get('/signup', (req, res, next) => {
-	res.render('signup');
-});
+router.route('signup')
+	.get((req, res)=>{
+		res.render('signup');
+	})
+	.post((req, res)=>{})
 
-router.get('/login', (req, res, next) => {
+router.get('/login', (req, res) => {
 	res.render('login');
 });
 
